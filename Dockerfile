@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y cmake g++ libssl-dev git
 # Set working directory
 WORKDIR /app
 
-# Copy everything from the "seender" folder into the container
-COPY seender /app
+# Make sure the build context includes the 'seender' folder
+COPY ./seender/ /app/
 
 # Compile the C++ server
 RUN cmake . && make
