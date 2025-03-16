@@ -1,25 +1,25 @@
-# Use multi-stage build to keep it clean and fast
+# Node.js build stage
 FROM node:20 AS node-builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy Node.js files
+# Copy Node files
 COPY index.js package*.json .env ./
 
-# Install Node dependencies
+# Install Node.js dependencies
 RUN npm install
 
-# Build C++ backend
+# C++ build stage
 FROM gcc:latest AS cpp-builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy C++ files
+# Copy C++ source files
 COPY server.cpp encrypt.cpp encrypt.h utils.cpp utils.h CMakeLists.txt ./
 
-# Build C++ server
+# Install CMake and build C++ backend
 RUN apt-get update && apt-get install -y cmake
 RUN cmake . && make
 
@@ -29,24 +29,25 @@ FROM ubuntu:latest
 # Set working directory
 WORKDIR /app
 
-# Copy from previous stages
+# Copy Node and C++ builds
 COPY --from=node-builder /app /app
 COPY --from=cpp-builder /app/server /app
 
-# Copy PHP and assets
-COPY *.php ./  
+# Copy PHP frontend and assets
+COPY *.php ./
 COPY assets/ ./assets
 
-# Install PHP and other dependencies
+# Install PHP and dependencies
 RUN apt-get update && apt-get install -y php-cli
 
-# Expose ports
+# Set environment variables for ports
 ENV NODE_PORT=8081
 ENV CPP_PORT=8080
 EXPOSE 8081 8080
 
-# Set the startup script
-COPY render-start.sh .
+# Copy startup script
+COPY render-start.sh .  
 RUN chmod +x render-start.sh
 
+# Launch both servers
 CMD ["./render-start.sh"]
