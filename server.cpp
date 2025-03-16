@@ -1,3 +1,9 @@
+#include <cstdlib>
+#include <string>
+
+const int PORT = std::getenv("CPP_PORT") ? std::stoi(std::getenv("CPP_PORT")) : 8080;
+const std::string USERS_DB = std::getenv("USERS_DB") ? std::getenv("USERS_DB") : "users.json";
+
 #include "uwebsockets/App.h"
 #include "encrypt.h"
 #include "utils.h"
