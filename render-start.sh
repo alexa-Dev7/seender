@@ -1,26 +1,22 @@
 #!/bin/bash
 
+# Set environment variables for Node and C++ servers
 export NODE_PORT=8081
 export CPP_PORT=8080
 
-# Start both servers
-node index.js & ./server
-
-#!/bin/bash
-
-# Ensure the script fails on any error
+# Ensure the script exits on any error
 set -e
 
-# Show logs for visibility
+# Log output for visibility
 echo "Starting SenderChatApp..."
 
-# Launch the C++ server backend
-echo "Launching C++ server backend..."
+# Launch C++ backend
+echo "Launching C++ backend on port $CPP_PORT..."
 ./server &
 
-# Launch the Node.js backend alongside it
-echo "Launching Node.js backend..."
+# Launch Node.js backend
+echo "Launching Node.js backend on port $NODE_PORT..."
 node index.js &
 
-# Keep the container running
+# Keep everything running
 wait
