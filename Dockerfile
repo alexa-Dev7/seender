@@ -8,7 +8,7 @@ WORKDIR /app
 COPY index.js package*.json .env ./  
 
 # Ensure package-lock.json exists to fix npm error
-RUN npm install --only=production
+RUN npm install --omit=dev
 
 # C++ build stage
 FROM gcc:latest AS cpp-builder
