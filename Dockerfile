@@ -1,46 +1,30 @@
-# Node.js build stage
-FROM node:20 AS node-builder
+# Stage 1: Build C++ server
+FROM ubuntu:latest AS cpp-builder
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y cmake g++ libssl-dev git
 
 # Set working directory
 WORKDIR /app
 
-# Copy the whole seender folder into /app
-COPY . /app
-
-# Install Node.js dependencies
-RUN npm install --omit=dev
-
-# C++ build stage
-FROM gcc:latest AS cpp-builder
-
-# Set working directory
-WORKDIR /app
-
-# Install C++ dependencies
-RUN apt-get update && apt-get install -y cmake libssl-dev git
-
-# Install uWebSockets from source
-RUN git clone https://github.com/uNetworking/uWebSockets.git && \
-    cd uWebSockets && \
-    make && make install && cd .. && rm -rf uWebSockets
-
-# Copy everything from node-builder
-COPY --from=node-builder /app /app
+# Copy everything from the "seender" folder into the container
+COPY seender /app
 
 # Compile the C++ server
 RUN cmake . && make
 
-# Final stage
+# Stage 2: Create the final runtime image
 FROM ubuntu:latest
 
-# Set working directory
+# Copy compiled server from build stage
+COPY --from=cpp-builder /app /app
 WORKDIR /app
 
-# Copy compiled app from cpp-builder stage
-COPY --from=cpp-builder /app /app
+# Ensure assets folder exists
+RUN mkdir -p /app/assets
 
-# Expose port
+# Expose server port
 EXPOSE 8080
 
-# Run the app
+# Run the server
 CMD ["./sender"]
