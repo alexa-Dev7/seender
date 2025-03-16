@@ -1,0 +1,60 @@
+/* Reset margins, paddings, and borders for consistent layout */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Reset font sizes and inherit family */
+body, button, input, textarea {
+    font-family: inherit;
+    font-size: 100%;
+}
+
+/* Remove list styling */
+ul, ol {
+    list-style: none;
+}
+
+/* Reset anchor styling */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Button and input styling reset */
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Reset images to fit properly */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Reset table styles */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* Ensure consistent line-height */
+body {
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove tap highlight on mobile (iOS feel) */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling behavior */
+html {
+    scroll-behavior: smooth;
+}
