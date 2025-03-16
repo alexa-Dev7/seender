@@ -1,31 +1,52 @@
-ENV NODE_PORT=8081
-ENV CPP_PORT=8080
+# Use multi-stage build to keep it clean and fast
+FROM node:20 AS node-builder
 
-# Use a lightweight C++ base image
-FROM gcc:latest
-
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy all files from the "sender" folder to the container
-COPY sender/ .
+# Copy Node.js files
+COPY index.js package*.json .env ./
 
-# Install necessary packages
-RUN apt-get update && apt-get install -y \
-    cmake \
-    libssl-dev \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+# Install Node dependencies
+RUN npm install
 
-# Install Node.js dependencies (new integration)
-RUN npm install express body-parser axios
+# Build C++ backend
+FROM gcc:latest AS cpp-builder
 
-# Compile the C++ project with CMake
+# Set working directory
+WORKDIR /app
+
+# Copy C++ files
+COPY server.cpp encrypt.cpp encrypt.h utils.cpp utils.h CMakeLists.txt ./
+
+# Build C++ server
+RUN apt-get update && apt-get install -y cmake
 RUN cmake . && make
 
-# Expose port 8080 for the server
-EXPOSE 8080
+# Final production image
+FROM ubuntu:latest
 
-# Set the command to start the server and Node backend
-CMD ["bash", "render-start.sh"]
+# Set working directory
+WORKDIR /app
+
+# Copy from previous stages
+COPY --from=node-builder /app /app
+COPY --from=cpp-builder /app/server /app
+
+# Copy PHP and assets
+COPY *.php ./  
+COPY assets/ ./assets
+
+# Install PHP and other dependencies
+RUN apt-get update && apt-get install -y php-cli
+
+# Expose ports
+ENV NODE_PORT=8081
+ENV CPP_PORT=8080
+EXPOSE 8081 8080
+
+# Set the startup script
+COPY render-start.sh .
+RUN chmod +x render-start.sh
+
+CMD ["./render-start.sh"]
