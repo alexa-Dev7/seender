@@ -1,5 +1,13 @@
 #!/bin/bash
 
+export NODE_PORT=8081
+export CPP_PORT=8080
+
+# Start both servers
+node index.js & ./server
+
+#!/bin/bash
+
 # Ensure the script fails on any error
 set -e
 
