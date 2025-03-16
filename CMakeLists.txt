@@ -26,7 +26,7 @@ set(CMAKE_BUILD_TYPE Release)
 add_compile_options(-O2 -Wall -Wextra -Werror)
 
 # Copy assets directory into the build output folder
-file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/assets)
 
 # Output build messages
 message(STATUS "Building SenderChatApp with C++17")
