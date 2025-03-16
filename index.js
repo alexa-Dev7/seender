@@ -1,3 +1,9 @@
+require("dotenv").config(); // Load .env
+
+const PORT = process.env.NODE_PORT || 8081;
+const RSA_KEY_SIZE = parseInt(process.env.RSA_KEY_SIZE) || 2048;
+const MESSAGE_DB = process.env.MESSAGES_DB || "messages.json";
+
 // Import Node modules
 const express = require("express");
 const bodyParser = require("body-parser");
