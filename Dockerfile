@@ -1,68 +1,42 @@
-# -------------------------------
-# Node.js Build Stage
-# -------------------------------
+# Use a multi-stage build for Node.js and C++
 FROM node:20 AS node-builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy Node.js files properly
-COPY index.js package*.json .env ./
-
-# Debug: Ensure package.json is visible
-RUN ls -la /app
-
-# ✅ Install Node.js dependencies properly (no lock file required!)
+# Copy package files and install dependencies
+COPY seender/package*.json ./
 RUN npm install --omit=dev
 
-# -------------------------------
+# Copy all project files (including assets)
+COPY seender /app
+
 # C++ Build Stage
-# -------------------------------
 FROM gcc:latest AS cpp-builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy C++ source files
-COPY server.cpp encrypt.cpp encrypt.h utils.cpp utils.h CMakeLists.txt ./
-
-# Install required build tools and OpenSSL for encryption
+# Install C++ dependencies
 RUN apt-get update && apt-get install -y cmake libssl-dev
 
-# Compile C++ server
+# Copy source code and assets from the previous stage
+COPY --from=node-builder /app /app
+
+# Compile the C++ server
 RUN cmake . && make
 
-# -------------------------------
-# Final Production Image
-# -------------------------------
+# Final Stage
 FROM ubuntu:latest
 
 # Set working directory
 WORKDIR /app
 
-# Copy Node.js build from node-builder stage
-COPY --from=node-builder /app /app
+# Copy compiled app from the C++ build stage
+COPY --from=cpp-builder /app /app
 
-# Copy C++ server build from cpp-builder stage
-COPY --from=cpp-builder /app/server /app
+# Expose port
+EXPOSE 8080
 
-# Copy PHP frontend files and assets
-COPY *.php ./
-COPY assets/ ./assets
-
-# Install PHP CLI and system dependencies
-RUN apt-get update && apt-get install -y php-cli
-
-# Set environment variables for Node.js and C++ ports
-ENV NODE_PORT=8081
-ENV CPP_PORT=8080
-
-# Expose required ports
-EXPOSE 8081 8080
-
-# Copy and prepare the startup script
-COPY render-start.sh .
-RUN chmod +x render-start.sh
-
-# Ensure the container runs both servers (Node + C++)
-CMD ["./render-start.sh"]
+# Run the app
+CMD ["./sender"]
