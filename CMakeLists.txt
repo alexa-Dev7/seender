@@ -1,35 +1,22 @@
-# Minimum CMake version requirement
 cmake_minimum_required(VERSION 3.10)
-
-# Project name and C++17 setup
-project(SenderChatApp LANGUAGES CXX)
+project(SenderChatApp)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Define output executable
-add_executable(server 
-    server.cpp 
-    encrypt.cpp 
-    utils.cpp
-)
-
-# Include headers
-target_include_directories(server PRIVATE ${CMAKE_SOURCE_DIR})
-
-# Link OpenSSL for RSA/AES encryption and bcrypt support
+# Include OpenSSL
 find_package(OpenSSL REQUIRED)
-target_link_libraries(server OpenSSL::Crypto)
 
-# Enable performance optimizations
-set(CMAKE_BUILD_TYPE Release)
-add_compile_options(-O2 -Wall -Wextra -Werror)
+# Define source files
+set(SOURCE_FILES server.cpp encrypt.cpp utils.cpp)
 
-# Copy assets directory into the build output folder
-file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/assets)
+# Define the executable
+add_executable(sender ${SOURCE_FILES})
 
-# Output build messages
-message(STATUS "Building SenderChatApp with C++17")
-message(STATUS "Encryption: RSA & AES with OpenSSL")
-message(STATUS "Bcrypt password handling enabled")
-message(STATUS "Short polling every 1 second enabled")
+# Link OpenSSL
+target_link_libraries(sender OpenSSL::Crypto)
+
+# Copy assets folder into the app directory
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION /app)
+
+# Add definitions for encryption and settings
+add_definitions(-DENABLE_ENCRYPTION -DUSE_BCRYPT -DSHORT_POLLING=1)
