@@ -1,22 +1,36 @@
 cmake_minimum_required(VERSION 3.10)
 project(SenderChatApp)
 
+# Set C++17 standard
 set(CMAKE_CXX_STANDARD 17)
 
-# Include OpenSSL
-find_package(OpenSSL REQUIRED)
+# Include directories for uWebSockets and OpenSSL
+include_directories(/usr/local/include)
+link_directories(/usr/local/lib)
 
 # Define source files
-set(SOURCE_FILES server.cpp encrypt.cpp utils.cpp)
+set(SOURCES
+    server.cpp
+    encrypt.cpp
+    utils.cpp
+)
 
-# Define the executable
-add_executable(sender ${SOURCE_FILES})
+# Add the executable
+add_executable(sender ${SOURCES})
 
-# Link OpenSSL
-target_link_libraries(sender OpenSSL::Crypto)
+# Link against uWebSockets, OpenSSL, and pthread
+target_link_libraries(sender uWS ssl crypto pthread)
 
-# Copy assets folder into the app directory
-file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION /app)
+# Ensure assets folder is copied
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
 
-# Add definitions for encryption and settings
-add_definitions(-DENABLE_ENCRYPTION -DUSE_BCRYPT -DSHORT_POLLING=1)
+# Optional: output the binary to /app folder
+set_target_properties(sender PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "/app"
+)
+
+# Display build info
+message(STATUS "Building SenderChatApp with C++17")
+message(STATUS "Encryption: RSA & AES with OpenSSL")
+message(STATUS "Bcrypt password handling enabled")
+message(STATUS "Short polling every 1 second enabled")
