@@ -17,7 +17,12 @@ FROM gcc:latest AS cpp-builder
 WORKDIR /app
 
 # Install C++ dependencies
-RUN apt-get update && apt-get install -y cmake libssl-dev
+RUN apt-get update && apt-get install -y cmake libssl-dev git
+
+# Install uWebSockets from source
+RUN git clone https://github.com/uNetworking/uWebSockets.git && \
+    cd uWebSockets && \
+    make && make install && cd .. && rm -rf uWebSockets
 
 # Copy everything from node-builder
 COPY --from=node-builder /app /app
