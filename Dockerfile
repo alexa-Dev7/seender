@@ -1,17 +1,16 @@
-# Use a multi-stage build for Node.js and C++
+# Node.js build stage
 FROM node:20 AS node-builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY seender/package*.json ./
+# Copy the whole seender folder into /app
+COPY . /app
+
+# Install Node.js dependencies
 RUN npm install --omit=dev
 
-# Copy all project files (including assets)
-COPY seender /app
-
-# C++ Build Stage
+# C++ build stage
 FROM gcc:latest AS cpp-builder
 
 # Set working directory
@@ -20,19 +19,19 @@ WORKDIR /app
 # Install C++ dependencies
 RUN apt-get update && apt-get install -y cmake libssl-dev
 
-# Copy source code and assets from the previous stage
+# Copy everything from node-builder
 COPY --from=node-builder /app /app
 
 # Compile the C++ server
 RUN cmake . && make
 
-# Final Stage
+# Final stage
 FROM ubuntu:latest
 
 # Set working directory
 WORKDIR /app
 
-# Copy compiled app from the C++ build stage
+# Copy compiled app from cpp-builder stage
 COPY --from=cpp-builder /app /app
 
 # Expose port
