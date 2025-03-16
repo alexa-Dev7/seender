@@ -1,3 +1,6 @@
+ENV NODE_PORT=8081
+ENV CPP_PORT=8080
+
 # Use a lightweight C++ base image
 FROM gcc:latest
 
