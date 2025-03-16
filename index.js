@@ -1,4 +1,4 @@
-require("dotenv").config(); // Load .env
+require("dotenv").config(); // Load .env file
 
 const PORT = process.env.NODE_PORT || 8081;
 const RSA_KEY_SIZE = parseInt(process.env.RSA_KEY_SIZE) || 2048;
@@ -14,12 +14,9 @@ const crypto = require("crypto");
 const app = express();
 app.use(bodyParser.json());
 
-// Port setup (matches Dockerfile)
-const PORT = 8081;
-
 // RSA key generation for E2EE
 const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
-  modulusLength: 2048,
+  modulusLength: RSA_KEY_SIZE,
 });
 
 // Endpoint to get the public key
@@ -35,18 +32,21 @@ app.post("/sendEncryptedMessage", (req, res) => {
     return res.status(400).json({ error: "Invalid data" });
   }
 
-  const messagesFile = "messages.json";
   let messages = [];
 
   // Load existing messages if available
-  if (fs.existsSync(messagesFile)) {
-    messages = JSON.parse(fs.readFileSync(messagesFile));
+  if (fs.existsSync(MESSAGE_DB)) {
+    messages = JSON.parse(fs.readFileSync(MESSAGE_DB));
   }
 
-  messages.push({ user, encryptedMessage, timestamp: new Date().toISOString() });
+  messages.push({
+    user,
+    encryptedMessage,
+    timestamp: new Date().toISOString(),
+  });
 
   // Save messages back to the file
-  fs.writeFileSync(messagesFile, JSON.stringify(messages, null, 2));
+  fs.writeFileSync(MESSAGE_DB, JSON.stringify(messages, null, 2));
 
   res.json({ status: "Message received securely" });
 });
